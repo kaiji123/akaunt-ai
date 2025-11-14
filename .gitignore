@@ -93,5 +93,7 @@ _ide_helper_models.php
 .phpunit.result.cache
 modules/*
 !modules/.gitkeep
+!modules/AiReceiptReader/
+!modules/AiReceiptReader/**
 .laravelstatsrc
 .DS_Store

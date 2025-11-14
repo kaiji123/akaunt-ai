@@ -1,0 +1,17 @@
+{
+  "alias": "ai-receipt-reader",
+  "icon": "fa fa-receipt",
+  "version": "1.0.0",
+  "active": 1,
+  "providers": [
+    "Modules\\AiReceiptReader\\Providers\\Main"
+  ],
+  "aliases": {},
+  "files": [],
+  "requires": [],
+  "reports": [],
+  "widgets": [],
+  "settings": [],
+  "extra-modules": {},
+  "routes": {}
+}

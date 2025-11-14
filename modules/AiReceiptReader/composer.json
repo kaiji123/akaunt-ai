@@ -1,0 +1,22 @@
+{
+    "config": {
+        "autoloader-suffix": "aiReceiptReader"
+    },
+    "name": "akaunting/module-ai-receipt-reader",
+    "description": "AI Receipt Reader - Auto-fills accounting fields from receipt uploads",
+    "homepage": "https://akaunting.com",
+    "keywords": [
+        "laravel",
+        "accounting",
+        "akaunting",
+        "ai-receipt-reader",
+        "openai",
+        "receipt-scanning"
+    ],
+    "license": "GPL-3.0+",
+    "autoload": {
+        "psr-4": {
+            "Modules\\AiReceiptReader\\": ""
+        }
+    }
+}
