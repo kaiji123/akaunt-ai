@@ -3,8 +3,9 @@
 namespace Modules\ReceiptReader\Http\Controllers;
 
 use App\Abstracts\Http\Controller;
+use Modules\ReceiptReader\Services\AiReceiptService;  
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
+use Illuminate\Http\Response;   
 
 class Main extends Controller
 {
@@ -72,6 +73,25 @@ class Main extends Controller
     {
         //
     }
+
+    public function process(Request $request)
+    {
+        $request->validate([
+            'receipt' => 'required|image|max:8000',
+        ]);
+
+        $file = $request->file('receipt');
+        $fileContents = file_get_contents($file->getRealPath());
+
+        $ai = new AiReceiptService();
+        $data = $ai->extractDataFromContents($fileContents);
+
+        // Redirect to results page with AI data
+        return view('receipt-reader::results', [
+            'ai' => $data
+        ]);
+    }
+
 
     /**
      * Remove the specified resource from storage.
