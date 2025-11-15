@@ -6,7 +6,7 @@ use App\Abstracts\Http\Controller;
 use Modules\ReceiptReader\Services\AiReceiptService;  
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;   
-
+use Illuminate\Support\Facades\Log;
 class Main extends Controller
 {
     /**
@@ -74,23 +74,23 @@ class Main extends Controller
         //
     }
 
-    public function process(Request $request)
-    {
-        $request->validate([
-            'receipt' => 'required|image|max:8000',
-        ]);
+public function process(Request $request)
+{
+    $request->validate([
+        'receipt' => 'required|image|max:8000',
+    ]);
 
-        $file = $request->file('receipt');
-        $fileContents = file_get_contents($file->getRealPath());
+    $file = $request->file('receipt');
+    $fileContents = file_get_contents($file->getRealPath());
 
-        $ai = new AiReceiptService();
-        $data = $ai->extractDataFromContents($fileContents);
-
-        // Redirect to results page with AI data
-        return view('receipt-reader::results', [
-            'ai' => $data
-        ]);
-    }
+    $ai = new AiReceiptService();
+    $data = $ai->extractDataFromContents($fileContents);
+    Log::info('AI Receipt Data:', $data);
+    // Redirect to results page with AI data
+    return view('receipt-reader::results', [
+       'ai' => $data['ai_data'] 
+    ]);
+}
 
 
     /**
