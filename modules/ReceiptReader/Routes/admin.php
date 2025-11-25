@@ -11,4 +11,5 @@ use Illuminate\Support\Facades\Route;
 Route::admin('receipt-reader', function () {
     Route::get('/', 'Main@index')->name('index');
     Route::post('process', 'Main@process')->name('process');
+    Route::post('store-bill', 'Main@storeBill')->name('store-bill');
 });

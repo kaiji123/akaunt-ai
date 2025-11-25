@@ -26,6 +26,7 @@ Return ONLY valid JSON, following exactly this structure:
   "tax": string | null,
   "total": string | null,
   "currency": string | null,
+  "savings": string | null, 
   "expense_category": string | null,
   "line_items": [
     {
@@ -95,6 +96,7 @@ EOT;
         ];
     }
 
+    // --- SECOND METHOD UPDATED FOR COMPLETENESS ---
     public function extractData(string $imagePath): array
     {
         $client = OpenAI::client(env('OPENAI_API_KEY'));
@@ -118,6 +120,7 @@ EOT;
                                 tax,
                                 total,
                                 currency,
+                                savings,           // <--- ADDED SAVINGS FIELD HERE
                                 expense_category,
                                 line_items (description, qty, unit_price)"
                         ],
