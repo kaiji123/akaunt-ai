@@ -202,51 +202,59 @@ protected function mapAiDataToBill(array $ai): array
     $billDate = Carbon::parse($ai['date'] ?? now());
 // 💡 ADDED FIX: Get the next sequential bill number
 $nextDocumentNumber = app(DocumentNumber::class)->getNextNumber('bill', null);
-    $billHeader = [
-        'company_id' => $current_company_id,
-        'type' => 'bill',
-        'document_number' => $nextDocumentNumber,
-        'vendor_id' => $vendor->id,
-        'billing_date' => $billDate->format('Y-m-d'),
-        'due_at' => $billDate->copy()->addDays(30)->format('Y-m-d'),
-        'currency_code' => $billCurrency,
-        'currency_rate' => $billCurrencyRate, // 🛑 CORRECTED LINE
-        'category_id' => $category->id,
-        'amount' => $billTotal,
-    ];
-        // 4. Prepare Line Items Data
-        $billItems = [];
-        $lineItems = $ai['line_items'] ?? []; 
+$billHeader = [
+    'company_id' => $current_company_id, 
+    'type' => 'bill',
+    'document_number' => $nextDocumentNumber,
+    'vendor_id' => $vendor->id, // Use vendor_id for the relational key
+    'contact_id' => $vendor->id, // 🛑 ADDED: Use vendor_id as contact_id (MANDATORY)
+    'contact_name' => $vendor->name, // 🛑 ADDED: Use vendor name as contact_name
+    'status' => 'received', 
+    'issued_at' => $billDate->format('Y-m-d'), // 🛑 FINAL MANDATORY DATE FIELD
+    'billing_date' => $billDate->format('Y-m-d'), // This is often redundant if issued_at is present, but keep for safety.
+    'due_at' => $billDate->copy()->addDays(30)->format('Y-m-d'), 
+    'currency_code' => $billCurrency,
+    'currency_rate' => $billCurrencyRate,
+    'category_id' => $category->id,
+    'amount' => $billTotal, 
+];
+ // 4. Prepare Line Items Data (FINAL FIXES APPLIED)
+$billItems = [];
+$lineItems = $ai['line_items'] ?? []; 
+ 
+if (!empty($lineItems)) {
+    foreach ($lineItems as $item) {
+        $price = $cleanFloat($item['unit_price']);
+        $qty = $cleanFloat($item['qty'] ?? 1);
         
-        if (!empty($lineItems)) {
-            foreach ($lineItems as $item) {
-                $price = $cleanFloat($item['unit_price']);
-                $qty = $cleanFloat($item['qty'] ?? 1);
-                
-                $billItems[] = [
-                    'name' => $item['description'] ?? 'Item',
-                    'quantity' => $qty,
-                    'price' => $price,
-                    'total' => $qty * $price,
-                    'tax_id' => 0, 
-                ];
-            }
-        } else {
-            // Fallback for bills with no detailed line items: create one summary item
-            $billSubtotal = $cleanFloat($ai['subtotal'] ?? $ai['total'] ?? 0);
-            $billItems[] = [
-                'name' => 'Receipt Total',
-                'quantity' => 1,
-                'price' => $billSubtotal,
-                'total' => $billSubtotal,
-                'tax_id' => 0,
-            ];
-        }
-
-        return [
-            'bill' => $billHeader,
-            'items' => $billItems,
+        $billItems[] = [
+            'company_id' => $current_company_id, // Added in the last step
+            'type' => 'item',                    // 🛑 FINAL FIX: Added mandatory item type
+            'name' => $item['description'] ?? 'Item',
+            'quantity' => $qty,
+            'price' => $price,
+            'total' => $qty * $price,
+            'tax_id' => 0, 
         ];
+    }
+} else {
+    // Fallback for bills with no detailed line items: create one summary item
+    $billSubtotal = $cleanFloat($ai['subtotal'] ?? $ai['total'] ?? 0);
+    $billItems[] = [
+        'company_id' => $current_company_id, // Added in the last step
+        'type' => 'item',                    // 🛑 FINAL FIX: Added mandatory item type
+        'name' => 'Receipt Total',
+        'quantity' => 1,
+        'price' => $billSubtotal,
+        'total' => $billSubtotal,
+        'tax_id' => 0,
+    ];
+}
+
+return [
+    'bill' => $billHeader,
+    'items' => $billItems,
+];
     }
 
 public function process(Request $request)
